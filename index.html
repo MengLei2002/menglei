@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>新年快乐</title>
+    <style>
+        /* 禁用移动端点击高亮 */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: -webkit-fill-available;
+            font-family: "Microsoft YaHei", sans-serif;
+            cursor: pointer;
+            position: relative;
+            width: 100%;
+            overscroll-behavior: none;
+            touch-action: none;
+        }
+
+        /* 添加页面容器样式 */
+        .page-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* 确保背景层始终可见 */
+        .background-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            z-index: 0;
+        }
+
+        .stars {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            perspective: 1000px;
+            z-index: 3;
+            pointer-events: none;
+            top: 0;
+            left: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            filter: blur(1px);
+            animation: twinkle var(--duration) infinite;
+        }
+
+        .container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .greeting {
+            position: absolute;
+            left: 50%;
+            top: 40%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(42px, 12vw, 72px);
+            line-height: 1;
+            text-align: center;
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            z-index: 3;
+            font-weight: bold;
+            animation: textPulse 2s ease-in-out infinite;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .year {
+            position: absolute;
+            left: 50%;
+            top: 55%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(32px, 8vw, 48px);
+            line-height: 1;
+            background: linear-gradient(120deg, #ff6b6b, #ffd700);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: textPulse 2s ease-in-out infinite;
+            font-weight: bold;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .firework {
+            position: fixed;
+            pointer-events: none;
+            z-index: 4;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+        }
+
+        .spark {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            animation: explode 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+            transform: translate3d(0, 0, 0) scale(1);
+            transform-origin: center;
+            mix-blend-mode: screen;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+            contain: strict;
+            background: currentColor;
+            box-shadow: 
+                0 0 10px currentColor,
+                0 0 20px currentColor,
+                0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes explode {
+            0% {
+                transform: translate3d(0, 0, 0) scale(1);
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate3d(var(--x), var(--y), 0) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .spark-trail {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.2;
+            animation: trail 0.6s ease-out forwards;
+            will-change: transform, opacity;
+        }
+
+        @keyframes trail {
+            0% {
+                transform: scale(0.8) rotate(0deg);
+                opacity: 0.3;
+            }
+            100% {
+                transform: scale(0) rotate(90deg);
+                opacity: 0;
+            }
+        }
+
+        .trail {
+            position: absolute;
+            width: 4px;
+            background: linear-gradient(to top, 
+                transparent, 
+                rgba(255, 235, 59, 0.6) 20%, 
+                rgba(255, 255, 255, 0.9)
+            );
+            border-radius: 50%;
+            filter: blur(2px);
+            opacity: 0.9;
+            z-index: 1;
+            will-change: transform;
+            transform-origin: bottom;
+        }
+
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: particleFall 3s linear infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+                filter: brightness(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.05);
+                filter: brightness(1.2);
+            }
+        }
+
+        @keyframes particleFall {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes rise {
+            0% {
+                height: 0;
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                height: 0;
+                transform: translateY(calc(var(--target-y) * -1));
+                opacity: 0;
+            }
+        }
+
+        @keyframes starRotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .click-hint {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: clamp(14px, 4vw, 18px);
+            animation: fadeInOut 2s ease-in-out infinite;
+            z-index: 15;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            pointer-events: none;
+            white-space: nowrap;
+            display: block;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        @media (max-width: 768px) {
+            .spark {
+                width: 3px;
+                height: 3px;
+                box-shadow: 
+                    0 0 6px currentColor,
+                    0 0 12px currentColor,
+                    0 0 18px rgba(255, 255, 255, 0.3);
+            }
+            
+            .particle {
+                display: none;
+            }
+
+            .trail {
+                width: 3px;
+                height: 30px;
+            }
+
+            .click-hint {
+                bottom: 30px;
+                font-size: clamp(12px, 4vw, 16px);
+            }
+
+            .greeting {
+                line-height: 0.9;
+                top: 42%;
+            }
+            
+            .year {
+                top: 54%;
+            }
+        }
+
+        .moon {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(90deg, #ffd700, #ffa500);
+            border-radius: 50%;
+            box-shadow: 0 0 20px #ffd700;
+            top: 50px;
+            right: 50px;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .cloud {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 50%;
+            filter: blur(40px);
+            z-index: 1;
+            animation: float var(--duration) linear infinite;
+        }
+
+        .sound-control {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 15;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .sound-control:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .sound-icon {
+            width: 24px;
+            height: 24px;
+            fill: rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { 
+                opacity: 0.2; 
+                transform: scale(0.8); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.2); 
+            }
+        }
+
+        @keyframes float {
+            from { transform: translateX(-100%) translateY(var(--y)); }
+            to { transform: translateX(100vw) translateY(var(--y)); }
+        }
+
+        @media (max-width: 768px) {
+            .moon {
+                width: 40px;
+                height: 40px;
+                top: 30px;
+                right: 30px;
+            }
+
+            .sound-control {
+                top: 10px;
+                left: 10px;
+                padding: 6px;
+            }
+
+            .sound-icon {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        /* 添加欢迎界面样式 */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: all 1s ease-out;
+        }
+
+        .welcome-text {
+            font-size: clamp(28px, 7vw, 56px);
+            text-align: center;
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: welcomePulse 2s ease-in-out infinite;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .welcome-hint {
+            font-size: clamp(16px, 4vw, 24px);
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 20px;
+            animation: hintFade 1.5s ease-in-out infinite;
+        }
+
+        @keyframes welcomePulse {
+            0%, 100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+            50% {
+                transform: scale(1.05);
+                filter: brightness(1.2);
+            }
+        }
+
+        @keyframes hintFade {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .fade-out {
+            opacity: 0 !important;
+            transform: translateY(-50px) !important;
+            pointer-events: none;
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .fade-in {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .blessing-text {
+            position: fixed;
+            left: 50%;
+            top: 45%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(16px, 4vw, 32px);
+            line-height: 2.2;
+            text-align: center;
+            opacity: 0;
+            white-space: pre-line;
+            z-index: 100;
+            pointer-events: none;
+            visibility: hidden;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            letter-spacing: 2px;
+            width: 90%;
+            max-width: 600px;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .blessing-line {
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+            background: linear-gradient(120deg, 
+                #ffd700 0%, 
+                #ffa500 25%,
+                #ff8c00 50%,
+                #ffa500 75%,
+                #ffd700 100%
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            animation: lineAppear 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            padding: 8px 0;
+            position: relative;
+            font-weight: 600;
+        }
+
+        .blessing-line::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%,
+                rgba(255, 215, 0, 0.5) 50%,
+                transparent 100%
+            );
+            transform: translateX(-50%);
+            animation: lineGrow 1.5s ease-out forwards;
+            animation-delay: inherit;
+        }
+
+        .blessing-text.show {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 2s ease;
+        }
+
+        @keyframes lineAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+                filter: blur(4px);
+            }
+            50% {
+                opacity: 0.5;
+                filter: blur(2px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        @keyframes lineGrow {
+            0% {
+                width: 0;
+                opacity: 0;
+            }
+            50% {
+                width: 60%;
+                opacity: 0.5;
+            }
+            100% {
+                width: 0;
+                opacity: 0;
+            }
+        }
+
+        /* 添加每行文字的动画延迟 */
+        .blessing-line {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: lineAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        /* 添加新的过渡效果 */
+        .transition-slide {
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide-up {
+            transform: translateY(-30px);
+            opacity: 0;
+        }
+
+        .slide-down {
+            transform: translateY(30px);
+            opacity: 0;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .blessing-text {
+                font-size: clamp(14px, 4.5vw, 24px);
+                line-height: 2;
+                letter-spacing: 1px;
+                width: 85%;
+                padding: 0 15px;
+            }
+
+            .blessing-line {
+                padding: 6px 0;
+            }
+        }
+
+        /* 超窄屏幕适配 */
+        @media (max-width: 320px) {
+            .blessing-text {
+                font-size: clamp(12px, 4vw, 18px);
+                line-height: 1.8;
+                letter-spacing: 0.5px;
+                width: 90%;
+                padding: 0 10px;
+            }
+
+            .blessing-line {
+                padding: 4px 0;
+            }
+        }
+
+        /* 添加页面切换过渡效果 */
+        .page-transition {
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease;
+        }
+
+        .slide-up {
+            transform: translateY(-100vh);
+            opacity: 0;
+        }
+
+        .slide-down {
+            transform: translateY(100vh);
+            opacity: 0;
+        }
+
+        /* 添加滑动提示样式 */
+        .swipe-hint {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.8;
+            animation: swipeHint 2s ease-in-out infinite;
+        }
+
+        .swipe-arrow {
+            width: 20px;
+            height: 20px;
+            border-left: 2px solid rgba(255, 255, 255, 0.6);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.6);
+            transform: rotate(-45deg);
+        }
+
+        @keyframes swipeHint {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        /* 滑动指示器样式 */
+        .swipe-indicator {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 15;
+        }
+
+        .indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .indicator-dot.active {
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 215, 0, 0.8);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        /* 改进页面过渡效果 */
+        .page-transition {
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform, opacity;
+        }
+
+        .slide-up {
+            transform: translateY(-100vh) scale(0.95);
+            opacity: 0;
+        }
+
+        .slide-down {
+            transform: translateY(100vh) scale(0.95);
+            opacity: 0;
+        }
+
+        /* 滑动提示动画 */
+        .swipe-hint {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .swipe-arrow {
+            width: 20px;
+            height: 20px;
+            border-left: 2px solid rgba(255, 255, 255, 0.8);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.8);
+            transform-origin: center;
+            animation: arrowBounce 2s infinite;
+        }
+
+        .swipe-up .swipe-arrow {
+            transform: rotate(-135deg);
+        }
+
+        .swipe-down .swipe-arrow {
+            transform: rotate(45deg);
+        }
+
+        @keyframes arrowBounce {
+            0%, 100% { transform: translateY(0) rotate(-135deg); }
+            50% { transform: translateY(-10px) rotate(-135deg); }
+        }
+
+        /* 添加移动端优化 */
+        @media (max-width: 768px) {
+            .swipe-indicator {
+                right: 10px;
+            }
+
+            .indicator-dot {
+                width: 6px;
+                height: 6px;
+            }
+
+            .indicator-dot.active {
+                width: 8px;
+                height: 8px;
+            }
+        }
+
+        /* 优化动画性能的样式 */
+        .firework, .spark, .trail {
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+            contain: layout style paint;
+        }
+
+        /* 优化粒子动画 */
+        .spark {
+            /* 保持其他样式不变 */
+            animation: explode 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+            transform: translate3d(0, 0, 0) scale(1);
+            transform-origin: center;
+            mix-blend-mode: screen;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+            contain: strict;
+            background: currentColor;
+            box-shadow: 
+                0 0 10px currentColor,
+                0 0 20px currentColor,
+                0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        /* 优化尾迹动画 */
+        .spark-trail {
+            /* 保持其他样式不变 */
+            animation: trail 0.6s ease-out forwards;
+            will-change: transform, opacity;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-layer"></div>
+    <!-- 添加欢迎界面 -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-text">2025新年祝福</div>
+    </div>
+
+    <!-- 添加声音控制按钮 -->
+    <div class="sound-control">
+        <svg class="sound-icon" viewBox="0 0 24 24">
+            <path d="M12 3L4 9v6l8 6V3zM16 8v8c1.1 0 2-0.9 2-2V10c0-1.1-0.9-2-2-2z"/>
+            <path d="M18 6v12c2.3 0 4-1.7 4-4V10c0-2.3-1.7-4-4-4z"/>
+        </svg>
+    </div>
+
+    <!-- 添加祝福文案 -->
+    <div class="container">
+        <div class="blessing-text" id="blessingText">愿2025年的你
+如星辰般璀璨
+无论生活给予何种风景
+都能以笑靥如花的姿态
+拥抱每一个晨曦与夜幕
+收获满满的幸福与成就</div>
+        <div class="greeting">新年快乐</div>
+        <div class="year">2025</div>
+    </div>
+
+    <!-- 其他现有元素 -->
+    <div class="stars"></div>
+    <div class="moon"></div>
+    <div class="click-hint" id="clickHint">点击屏幕开启祝福</div>
+
+    <!-- 添加页面指示器 -->
+    <div class="swipe-indicator">
+        <div class="indicator-dot" data-page="welcome"></div>
+        <div class="indicator-dot" data-page="main"></div>
+        <div class="indicator-dot" data-page="blessing"></div>
+    </div>
+
+    <script>
+        let audioContext;
+        let soundEnabled = true;
+        let masterGainNode;
+        let audioBuffers = {};
+
+        // 页面状态管理
+        const PageState = {
+            WELCOME: 'welcome',
+            MAIN: 'main',
+            BLESSING: 'blessing'
+        };
+
+        let currentState = PageState.WELCOME;
+        let isTransitioning = false;
+        const TRANSITION_DURATION = 800;
+
+        // 添加触摸事件相关变量
+        let touchStartTime = 0;
+        let touchStartY = 0;
+        let touchStartX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartTime = Date.now();
+            touchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndY = e.changedTouches[0].clientY;
+            const touchEndX = e.changedTouches[0].clientX;
+            const deltaY = touchStartY - touchEndY;
+            const deltaX = Math.abs(touchStartX - touchEndX);
+            const touchDuration = Date.now() - touchStartTime;
+
+            // 如果是快速点击（短触摸时间）且水平移动距离小，则触发烟花
+            if (touchDuration < 200 && deltaX < 30 && Math.abs(deltaY) < 30) {
+                if (currentState !== PageState.WELCOME) {
+                    createFirework(touchStartX, touchStartY, false);
+                }
+                return;
+            }
+
+            // 如果是滑动手势
+            if (Math.abs(deltaY) > 50 && deltaX < 50) {
+                handlePageTransition(deltaY > 0 ? 'up' : 'down');
+            }
+        }, { passive: true });
+
+        // 添加点击事件处理
+        document.addEventListener('click', (e) => {
+            if (isTransitioning) return;
+            
+            if (currentState !== PageState.WELCOME) {
+                // 使用页面相对坐标
+                const x = e.pageX;
+                const y = e.pageY;
+                createFirework(x, y, false);
+            }
+            handlePageTransition('up');
+        });
+
+        // 添加滚轮事件处理
+        let wheelAccumulator = 0;
+        const WHEEL_THRESHOLD = 50;
+        let lastWheelTime = 0;
+        const WHEEL_COOLDOWN = 500;
+
+        document.addEventListener('wheel', (e) => {
+            if (isTransitioning) return;
+            
+            const now = Date.now();
+            if (now - lastWheelTime < WHEEL_COOLDOWN) return;
+            
+            wheelAccumulator += e.deltaY;
+            
+            if (Math.abs(wheelAccumulator) > WHEEL_THRESHOLD) {
+                handlePageTransition(wheelAccumulator > 0 ? 'up' : 'down');
+                wheelAccumulator = 0;
+                lastWheelTime = now;
+            }
+        }, { passive: true });
+
+        // 统一的页面切换管理
+        class PageManager {
+            constructor() {
+                this.welcomeScreen = document.getElementById('welcomeScreen');
+                this.greeting = document.querySelector('.greeting');
+                this.year = document.querySelector('.year');
+                this.blessingText = document.getElementById('blessingText');
+                this.clickHint = document.getElementById('clickHint');
+                this.currentIndex = 0;
+
+                // 设置初始状态
+                this.blessingText.style.display = 'none';
+                this.updateHintText(0);
+            }
+
+            updateHintText(index) {
+                switch(index) {
+                    case 0: // 欢迎页
+                        this.clickHint.textContent = '向上滑动或点击继续';
+                        this.clickHint.style.display = 'block';
+                        break;
+                    case 1: // 主页
+                        this.clickHint.textContent = '点击屏幕放烟花';
+                        this.clickHint.style.display = 'block';
+                        break;
+                    case 2: // 祝福页
+                        this.clickHint.textContent = '点击屏幕释放烟花';
+                        this.clickHint.style.display = 'block';
+                        break;
+                }
+            }
+
+            async switchPage(direction) {
+                if (isTransitioning) return;
+                isTransitioning = true;
+
+                const nextIndex = direction === 'up' ? 
+                    Math.min(this.currentIndex + 1, 2) : 
+                    Math.max(this.currentIndex - 1, 0);
+
+                if (nextIndex === this.currentIndex) {
+                    isTransitioning = false;
+                    return;
+                }
+
+                // 更新提示文字
+                this.updateHintText(nextIndex);
+
+                await this.transition(nextIndex);
+                this.currentIndex = nextIndex;
+                updateIndicators(this.currentIndex);
+                
+                setTimeout(() => {
+                    isTransitioning = false;
+                }, TRANSITION_DURATION);
+            }
+
+            async transition(nextIndex) {
+                switch(nextIndex) {
+                    case 0:
+                        await this.showWelcome();
+                        break;
+                    case 1:
+                        await this.showMain();
+                        break;
+                    case 2:
+                        await this.showBlessing();
+                        break;
+                }
+            }
+
+            async showWelcome() {
+                this.welcomeScreen.style.display = 'flex';
+                this.welcomeScreen.classList.remove('slide-up');
+                
+                this.greeting.classList.add('slide-down');
+                this.year.classList.add('slide-down');
+                
+                if (this.blessingText) {
+                    this.blessingText.style.display = 'none';
+                }
+                
+                this.updateHintText(0);
+                currentState = PageState.WELCOME;
+                
+                await new Promise(resolve => setTimeout(resolve, TRANSITION_DURATION));
+            }
+
+            async showMain() {
+                this.welcomeScreen.classList.add('slide-up');
+                
+                setTimeout(() => {
+                    this.welcomeScreen.style.display = 'none';
+                    this.greeting.classList.remove('slide-down', 'slide-up');
+                    this.year.classList.remove('slide-down', 'slide-up');
+                    
+                    this.greeting.style.opacity = '1';
+                    this.year.style.opacity = '1';
+                    
+                    if (this.blessingText) {
+                        this.blessingText.style.display = 'none';
+                    }
+
+                    currentState = PageState.MAIN;
+                    this.updateHintText(1);
+                    autoFirework(3000);
+                }, TRANSITION_DURATION / 2);
+            }
+
+            async showBlessing() {
+                this.greeting.classList.add('slide-up');
+                this.year.classList.add('slide-up');
+
+                setTimeout(() => {
+                    this.greeting.style.display = 'none';
+                    this.year.style.display = 'none';
+                    
+                    if (this.blessingText) {
+                        this.blessingText.style.display = 'block';
+                        const lines = this.blessingText.textContent.split('\n');
+                        this.blessingText.innerHTML = lines
+                            .map((line, index) => 
+                                `<div class="blessing-line" style="animation-delay: ${index * 0.8}s; --line-delay: ${index * 0.8}s">${line}</div>`
+                            )
+                            .join('');
+                        
+                        requestAnimationFrame(() => {
+                            this.blessingText.classList.add('show');
+                            setTimeout(() => {
+                                this.updateHintText(2);
+                                currentState = PageState.BLESSING;
+                                autoFirework(1500);
+                            }, lines.length * 800 + 500);
+                        });
+                    }
+                }, TRANSITION_DURATION / 2);
+            }
+        }
+
+        // 修改事件处理函数
+        function handlePageTransition(direction) {
+            if (isTransitioning) return;
+            
+            const isUp = direction === 'up';
+            switch(currentState) {
+                case PageState.WELCOME:
+                    if (isUp) pageManager.switchPage('up');
+                    break;
+                case PageState.MAIN:
+                    pageManager.switchPage(isUp ? 'up' : 'down');
+                    break;
+                case PageState.BLESSING:
+                    if (!isUp) pageManager.switchPage('down');
+                    break;
+            }
+        }
+
+        // 修改触摸移动事件处理
+        document.addEventListener('touchmove', (e) => {
+            if (isTransitioning) return;
+            e.preventDefault();
+        }, { passive: false });
+
+        // 更新指示器函数
+        function updateIndicators(index) {
+            document.querySelectorAll('.indicator-dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        }
+
+        // 初始化
+        const pageManager = new PageManager();
+        updateIndicators(0);
+
+        // 创建星星背景
+        function createStars() {
+            const starsContainer = document.querySelector('.stars');
+            const isMobile = window.innerWidth <= 768;
+            const starCount = isMobile ? 50 : 200;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.setProperty('--duration', `${2 + Math.random() * 3}s`);
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // 初始化音频系统
+        async function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGainNode = audioContext.createGain();
+                masterGainNode.gain.value = 0.6;
+                masterGainNode.connect(audioContext.destination);
+
+                // 加载烟花音效
+                const response1 = await fetch('path/to/launch.mp3');
+                const response2 = await fetch('path/to/boom.mp3');
+                
+                const [launchBuffer, boomBuffer] = await Promise.all([
+                    audioContext.decodeAudioData(await response1.arrayBuffer()),
+                    audioContext.decodeAudioData(await response2.arrayBuffer())
+                ]);
+
+                audioBuffers.launch = launchBuffer;
+                audioBuffers.boom = boomBuffer;
+            } catch (e) {
+                console.log('Audio initialization failed:', e);
+            }
+        }
+
+        // 播放音效
+        function playFireworkSound(type) {
+            if (!audioContext || !soundEnabled) return;
+            
+            const source = audioContext.createBufferSource();
+            const gainNode = audioContext.createGain();
+            
+            source.buffer = audioBuffers[type];
+            source.connect(gainNode);
+            gainNode.connect(masterGainNode);
+            
+            gainNode.gain.value = type === 'launch' ? 0.2 : 0.3;
+            source.start(0);
+        }
+
+        // 创建烟花
+        function createFirework(clickX, clickY, isAuto = false) {
+            const margin = 100;
+            let startX, targetX, targetY;
+            
+            if (!clickX || isAuto) {
+                targetX = margin + Math.random() * (window.innerWidth - margin * 2);
+                targetY = window.innerHeight * (0.2 + Math.random() * 0.5);
+                startX = targetX;
+            } else {
+                startX = clickX;
+                targetX = clickX;
+                // 调整移动端烟花目标高度
+                const randomHeight = window.innerHeight * (0.3 + Math.random() * 0.3);
+                targetY = Math.min(clickY - randomHeight, window.innerHeight * 0.8);
+            }
+
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            document.body.appendChild(firework);
+
+            if (!isAuto) {
+                const trail = document.createElement('div');
+                trail.className = 'trail';
+                trail.style.left = startX + 'px';
+                trail.style.bottom = '0';
+
+                // 计算目标位置（从底部开始计算）
+                const targetFromBottom = window.innerHeight - targetY;
+                trail.style.setProperty('--target-y', `${targetFromBottom}px`);
+
+                // 设置动画
+                const duration = Math.min(Math.max(targetFromBottom / 1000, 0.3), 0.6);
+                
+                // 创建动画关键帧
+                const keyframes = [
+                    {
+                        height: '0',
+                        transform: 'translateY(0)',
+                        opacity: 1
+                    },
+                    {
+                        height: `${targetFromBottom * 0.5}px`,
+                        transform: `translateY(${-targetFromBottom * 0.5}px)`,
+                        opacity: 1,
+                        offset: 0.5
+                    },
+                    {
+                        height: '0',
+                        transform: `translateY(${-targetFromBottom}px)`,
+                        opacity: 0
+                    }
+                ];
+
+                const timing = {
+                    duration: duration * 1000,
+                    easing: 'ease-out',
+                    fill: 'forwards'
+                };
+
+                const animation = trail.animate(keyframes, timing);
+
+                animation.onfinish = () => {
+                    trail.remove();
+                    createExplosion(firework, targetX, targetY);
+                };
+
+                firework.appendChild(trail);
+            } else {
+                createExplosion(firework, targetX, targetY);
+            }
+        }
+
+        function createExplosion(firework, x, y) {
+              firework.innerHTML = '';
+              const sparkCount = window.innerWidth <= 768 ? 100 : 150;
+              
+              const fragment = document.createDocumentFragment();
+
+              // 添加烟花类型和颜色定义
+              const type = Math.floor(Math.random() * 5);
+              const baseHue = Math.random() * 360;
+              const colors = generateColors(type, baseHue);
+
+              const angleStep = (Math.PI * 2) / sparkCount;
+              
+              const maxRadius = window.innerWidth <= 768 ? 180 : 280;
+
+              for (let i = 0; i < sparkCount; i++) {
+                  const spark = document.createElement('div');
+                  spark.className = 'spark';
+                  
+                  // 计算粒子属性
+                  const angle = angleStep * i + (Math.random() * 0.3);
+                  const velocity = 0.6 + Math.random() * 0.2;
+                  const spread = calculateSpread(type, angle, i);
+                  
+                  // 设置粒子样式
+                  const color = colors[Math.floor(Math.random() * colors.length)];
+                  const distance = maxRadius * velocity * spread;
+                  
+                  spark.style.cssText = `
+                      color: ${color};
+                      left: ${x}px;
+                      top: ${y}px;
+                      animation-delay: ${Math.random() * 0.08}s;
+                      --x: ${Math.cos(angle) * distance}px;
+                      --y: ${Math.sin(angle) * distance}px;
+                  `;
+
+                  // 添加尾迹
+                  const trail = document.createElement('div');
+                  trail.className = 'spark-trail';
+                  spark.appendChild(trail);
+                  
+                  fragment.appendChild(spark);
+              }
+
+              firework.appendChild(fragment);
+
+              setTimeout(() => {
+                  firework.remove();
+              }, 1500);
+
+              playExplodeSound();
+          }
+
+        function playLaunchSound() {
+            if (!audioContext || !soundEnabled) return;
+            
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(masterGainNode);
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(500, audioContext.currentTime + 0.15);
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.15);
+            } catch (e) {
+                console.log('Play launch sound failed:', e);
+            }
+        }
+
+        function playExplodeSound() {
+            if (!audioContext || !soundEnabled) return;
+            
+            try {
+                // 创建白噪音
+                const bufferSize = 2 * audioContext.sampleRate;
+                const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+                
+                // 创建混响效果
+                const convolver = audioContext.createConvolver();
+                const reverbBuffer = createReverbBuffer();
+                convolver.buffer = reverbBuffer;
+                
+                // 创建冲击波声音
+                const impactOsc = audioContext.createOscillator();
+                const impactGain = audioContext.createGain();
+                impactOsc.connect(impactGain);
+                
+                // 创建干湿混合
+                const dryGain = audioContext.createGain();
+                const wetGain = audioContext.createGain();
+                dryGain.gain.value = 0.6;
+                wetGain.gain.value = 0.4;
+                
+                // 创建爆炸声的主体
+                const explosionNoise = audioContext.createBufferSource();
+                explosionNoise.buffer = noiseBuffer;
+                
+                // 创建滤波器
+                const bandpass = audioContext.createBiquadFilter();
+                const lowpass = audioContext.createBiquadFilter();
+                const highpass = audioContext.createBiquadFilter();
+                
+                bandpass.type = 'bandpass';
+                lowpass.type = 'lowpass';
+                highpass.type = 'highpass';
+                
+                // 设置频率
+                bandpass.frequency.value = 180;
+                lowpass.frequency.value = 350;
+                highpass.frequency.value = 1200;
+                
+                // 设置Q值
+                bandpass.Q.value = 0.6;
+                lowpass.Q.value = 0.4;
+                highpass.Q.value = 0.7;
+                
+                // 连接滤波器
+                explosionNoise.connect(bandpass);
+                explosionNoise.connect(lowpass);
+                explosionNoise.connect(highpass);
+                
+                const gainNode = audioContext.createGain();
+                bandpass.connect(gainNode);
+                lowpass.connect(gainNode);
+                highpass.connect(gainNode);
+                gainNode.connect(dryGain);
+                gainNode.connect(convolver);
+                convolver.connect(wetGain);
+                
+                dryGain.connect(masterGainNode);
+                wetGain.connect(masterGainNode);
+                impactGain.connect(dryGain);
+                impactGain.connect(convolver);
+                
+                // 设置冲击波声音
+                impactOsc.frequency.setValueAtTime(150, audioContext.currentTime);
+                impactOsc.frequency.exponentialRampToValueAtTime(40, audioContext.currentTime + 0.1);
+                impactGain.gain.setValueAtTime(1, audioContext.currentTime);
+                impactGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                
+                // 设置爆炸声音包络
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.8, audioContext.currentTime + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+                
+                // 启动声音
+                impactOsc.start();
+                explosionNoise.start();
+                
+                impactOsc.stop(audioContext.currentTime + 0.1);
+                explosionNoise.stop(audioContext.currentTime + 0.3);
+            } catch (e) {
+                console.log('Play explode sound failed:', e);
+            }
+        }
+
+        // 创建混响缓冲区
+        function createReverbBuffer() {
+            const duration = 3.0;
+            const decay = 2.5;
+            const predelay = 0.03;
+            const sampleRate = audioContext.sampleRate;
+            const length = sampleRate * duration;
+            const impulse = audioContext.createBuffer(2, length, sampleRate);
+            const left = impulse.getChannelData(0);
+            const right = impulse.getChannelData(1);
+            
+            // 添加初始延迟
+            const predelaySamples = Math.floor(predelay * sampleRate);
+            
+            for (let i = 0; i < length; i++) {
+                const n = i / length;
+                const t = i / sampleRate;
+                // 添加多重反射和散射效果
+                let envelope;
+                if (i < predelaySamples) {
+                    envelope = 0;
+                } else {
+                    // 多重衰减曲线
+                    const mainDecay = Math.exp(-(t - predelay) / decay);
+                    const earlyReflections = Math.exp(-(t - predelay) / 0.5) * Math.sin(t * 20);
+                    const lateReflections = Math.exp(-(t - predelay) / 1.5) * 0.3;
+                    envelope = (mainDecay + earlyReflections + lateReflections) * 0.4;
+                }
+                
+                // 左右声道独立的散射
+                const diffusionL = Math.sin(t * 13.3) * Math.cos(t * 17.2);
+                const diffusionR = Math.sin(t * 14.7) * Math.cos(t * 15.8);
+                
+                left[i] = ((Math.random() * 2 - 1) + diffusionL * 0.5) * envelope;
+                right[i] = ((Math.random() * 2 - 1) + diffusionR * 0.5) * envelope;
+            }
+            
+            return impulse;
+        }
+
+        // 自动烟花效果
+        function autoFirework(baseDelay = 1500) {
+            const isMobile = window.innerWidth <= 768;
+            if (document.hidden || currentState === PageState.WELCOME) {
+                setTimeout(() => autoFirework(baseDelay), baseDelay);
+                return;
+            }
+
+            createFirework(null, null, true);
+            
+            const randomDelay = Math.random() * (isMobile ? 3000 : 1500);
+            const nextDelay = baseDelay + randomDelay;
+            
+            setTimeout(() => autoFirework(baseDelay), nextDelay);
+        }
+
+        // 确保在页面加载时创建星星
+        window.addEventListener('load', () => {
+            checkDevicePerformance();
+            createStars();
+            initAudio();
+            // 以较长的延迟启动烟花
+            setTimeout(() => autoFirework(3000), 1000);
+        });
+
+        // 添加音频控制
+        document.querySelector('.sound-control').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            document.querySelector('.sound-control').style.opacity = soundEnabled ? '1' : '0.5';
+            
+            if (soundEnabled) {
+                audioContext?.resume();
+            } else {
+                audioContext?.suspend();
+            }
+        });
+
+        // 修改轨迹动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            .trail {
+                position: absolute;
+                width: 4px;
+                background: linear-gradient(to top, 
+                    transparent, 
+                    rgba(255, 235, 59, 0.6) 20%, 
+                    rgba(255, 255, 255, 0.9)
+                );
+                border-radius: 50%;
+                filter: blur(2px);
+                opacity: 0.9;
+                z-index: 1;
+                will-change: transform;
+                transform-origin: bottom;
+            }
+
+            @keyframes rise {
+                0% {
+                    height: 0;
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+                100% {
+                    height: 0;
+                    transform: translateY(calc(var(--target-y) * -1));
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 添加缓存对象
+        const cache = {
+            fragments: new Map(),
+            colors: new Map(),
+            sparks: new Set()
+        };
+
+        // 颜色生成函数
+        function generateColors(type, baseHue) {
+            switch (type) {
+                case 0: // 彩虹渐变效果
+                    return Array.from({length: 8}, (_, i) => 
+                        `hsl(${baseHue + i * 45}, 100%, ${70 + Math.random() * 10}%)`
+                    );
+                case 1: // 双色渐变
+                    return [
+                        `hsl(${baseHue}, 100%, 75%)`,
+                        `hsl(${baseHue}, 95%, 65%)`,
+                        `hsl(${baseHue + 30}, 100%, 70%)`,
+                        `hsl(${baseHue + 30}, 95%, 60%)`
+                    ];
+                case 2: // 金色
+                    return [
+                        '#ffd700',
+                        '#ffc107',
+                        '#ffb300',
+                        '#ffa000',
+                        '#ff8f00'
+                    ];
+                case 3: // 银色
+                    return [
+                        '#ffffff',
+                        '#f8f8f8',
+                        '#e8e8e8',
+                        '#d8d8d8'
+                    ];
+                default: // 多彩闪光
+                    return [
+                        `hsl(${baseHue}, 100%, 75%)`,
+                        `hsl(${baseHue + 120}, 100%, 75%)`,
+                        `hsl(${baseHue + 240}, 100%, 75%)`
+                    ];
+            }
+        }
+
+        // 扩散计算函数
+        function calculateSpread(type, angle, index) {
+            switch (type) {
+                case 0: // 螺旋形
+                    return 1 + Math.sin(index * 0.1) * 0.2 + Math.cos(index * 0.05) * 0.2;
+                case 1: // 心形
+                    const t = angle;
+                    return 0.8 + Math.pow(Math.sin(t), 2) * 0.4;
+                case 2: // 圆形
+                    return 1 + Math.sin(angle * 2) * 0.1;
+                case 3: // 星形
+                    return 1 + Math.cos(angle * 5) * 0.2;
+                default: // 随机扩散
+                    return 1 + Math.random() * 0.3;
+            }
+        }
+
+        // 优化粒子创建
+        function createSpark(color, x, y, angle, distance, delay) {
+            const spark = document.createElement('div');
+            spark.className = 'spark';
+            spark.style.cssText = `
+                color: ${color};
+                left: ${x}px;
+                top: ${y}px;
+                animation-delay: ${delay}s;
+                transform: translate3d(0, 0, 0) scale(1.5);
+            `;
+            
+            spark.style.setProperty('--x', `${Math.cos(angle) * distance}px`);
+            spark.style.setProperty('--y', `${Math.sin(angle) * distance}px`);
+
+            const trail = document.createElement('div');
+            trail.className = 'spark-trail';
+            spark.appendChild(trail);
+
+            return spark;
+        }
+
+        // 添加设备性能检测
+        function checkDevicePerformance() {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                // 降低动画复杂度
+                document.documentElement.style.setProperty('--animation-scale', '0.7');
+                // 减少同时显示的粒子数量
+                window.maxParticles = 50;
+            }
+        }
+    </script>
+</body>
+</html> 
