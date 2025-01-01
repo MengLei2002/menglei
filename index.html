@@ -1133,7 +1133,13 @@
 
         // 创建烟花
         function createFirework(clickX, clickY, isAuto = false) {
-            const margin = 100;
+            // 获取设备性能系数
+            const performanceScale = window.devicePixelRatio > 2 ? 0.5 : 
+                                   window.devicePixelRatio > 1 ? 0.7 : 1;
+            
+            // 根据设备性能调整粒子数量
+            const sparkCount = Math.floor((window.innerWidth <= 768 ? 60 : 120) * performanceScale);
+            
             let startX, targetX, targetY;
             
             if (!clickX || isAuto) {
@@ -1205,58 +1211,73 @@
         }
 
         function createExplosion(firework, x, y) {
-              firework.innerHTML = '';
-              const sparkCount = window.innerWidth <= 768 ? 100 : 150;
-              
-              const fragment = document.createDocumentFragment();
-
-              // 添加烟花类型和颜色定义
-              const type = Math.floor(Math.random() * 5);
-              const baseHue = Math.random() * 360;
-              const colors = generateColors(type, baseHue);
-
-              const angleStep = (Math.PI * 2) / sparkCount;
-              
-              const maxRadius = window.innerWidth <= 768 ? 180 : 280;
-
-              for (let i = 0; i < sparkCount; i++) {
-                  const spark = document.createElement('div');
-                  spark.className = 'spark';
-                  
-                  // 计算粒子属性
-                  const angle = angleStep * i + (Math.random() * 0.3);
-                  const velocity = 0.6 + Math.random() * 0.2;
-                  const spread = calculateSpread(type, angle, i);
-                  
-                  // 设置粒子样式
-                  const color = colors[Math.floor(Math.random() * colors.length)];
-                  const distance = maxRadius * velocity * spread;
-                  
-                  spark.style.cssText = `
-                      color: ${color};
-                      left: ${x}px;
-                      top: ${y}px;
-                      animation-delay: ${Math.random() * 0.08}s;
-                      --x: ${Math.cos(angle) * distance}px;
-                      --y: ${Math.sin(angle) * distance}px;
-                  `;
-
-                  // 添加尾迹
-                  const trail = document.createElement('div');
-                  trail.className = 'spark-trail';
-                  spark.appendChild(trail);
-                  
-                  fragment.appendChild(spark);
-              }
-
-              firework.appendChild(fragment);
-
-              setTimeout(() => {
-                  firework.remove();
-              }, 1500);
-
-              playExplodeSound();
-          }
+            firework.innerHTML = '';
+            
+            // 使用 DocumentFragment 优化 DOM 操作
+            const fragment = document.createDocumentFragment();
+            
+            // 获取设备性能系数
+            const performanceScale = window.devicePixelRatio > 2 ? 0.5 : 
+                                   window.devicePixelRatio > 1 ? 0.7 : 1;
+            
+            // 根据设备性能调整粒子数量和大小
+            const sparkCount = Math.floor((window.innerWidth <= 768 ? 60 : 120) * performanceScale);
+            const maxRadius = Math.floor((window.innerWidth <= 768 ? 150 : 250) * performanceScale);
+            
+            // 优化颜色计算
+            const type = Math.floor(Math.random() * 5);
+            const baseHue = Math.random() * 360;
+            const colors = generateColors(type, baseHue);
+            
+            // 预计算角度步长
+            const angleStep = (Math.PI * 2) / sparkCount;
+            
+            // 使用 requestAnimationFrame 优化动画性能
+            requestAnimationFrame(() => {
+                for (let i = 0; i < sparkCount; i++) {
+                    const spark = document.createElement('div');
+                    spark.className = 'spark';
+                    
+                    const angle = angleStep * i + (Math.random() * 0.2);
+                    const velocity = 0.5 + Math.random() * 0.2;
+                    const spread = calculateSpread(type, angle, i);
+                    const distance = maxRadius * velocity * spread;
+                    
+                    // 使用 transform3d 触发硬件加速
+                    spark.style.cssText = `
+                        color: ${colors[i % colors.length]};
+                        left: ${x}px;
+                        top: ${y}px;
+                        animation-delay: ${Math.random() * 0.05}s;
+                        --x: ${Math.cos(angle) * distance}px;
+                        --y: ${Math.sin(angle) * distance}px;
+                        transform: translate3d(0,0,0);
+                        will-change: transform, opacity;
+                    `;
+                    
+                    // 仅在非移动端添加尾迹效果
+                    if (window.innerWidth > 768) {
+                        const trail = document.createElement('div');
+                        trail.className = 'spark-trail';
+                        spark.appendChild(trail);
+                    }
+                    
+                    fragment.appendChild(spark);
+                }
+                
+                firework.appendChild(fragment);
+                
+                // 添加爆炸音效
+                playExplodeSound();
+            });
+            
+            // 优化清理时机
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    firework.remove();
+                });
+            }, 1500);
+        }
 
         function playLaunchSound() {
             if (!audioContext || !soundEnabled) return;
@@ -1416,18 +1437,19 @@
 
         // 自动烟花效果
         function autoFirework(baseDelay = 1500) {
-            const isMobile = window.innerWidth <= 768;
-            if (document.hidden || currentState === PageState.WELCOME) {
-                setTimeout(() => autoFirework(baseDelay), baseDelay);
+            if (document.hidden || currentState === PageState.WELCOME || fps < 20) {
+                setTimeout(() => autoFirework(baseDelay), baseDelay * 2);
                 return;
             }
-
+            
             createFirework(null, null, true);
             
-            const randomDelay = Math.random() * (isMobile ? 3000 : 1500);
-            const nextDelay = baseDelay + randomDelay;
+            // 根据帧率动态调整延迟
+            const performanceDelay = fps < 30 ? 2000 : 
+                                   fps < 45 ? 1500 : 1000;
+            const randomDelay = Math.random() * performanceDelay;
             
-            setTimeout(() => autoFirework(baseDelay), nextDelay);
+            setTimeout(() => autoFirework(baseDelay), baseDelay + randomDelay);
         }
 
         // 确保在页面加载时创建星星
@@ -1435,8 +1457,15 @@
             checkDevicePerformance();
             createStars();
             initAudio();
-            // 以较长的延迟启动烟花
-            setTimeout(() => autoFirework(3000), 1000);
+            
+            // 延迟启动自动烟花，给予设备初始化时间
+            setTimeout(() => {
+                if (fps > 30) {
+                    autoFirework(3000);
+                } else {
+                    autoFirework(4000);
+                }
+            }, 2000);
         });
 
         // 添加音频控制
@@ -1572,12 +1601,56 @@
         // 添加设备性能检测
         function checkDevicePerformance() {
             const isMobile = window.innerWidth <= 768;
+            const isLowEnd = navigator.hardwareConcurrency <= 4 || !window.devicePixelRatio;
+            
+            window.performanceScale = isMobile ? (isLowEnd ? 0.3 : 0.5) : 1;
+            
+            // 设置全局性能相关变量
+            document.documentElement.style.setProperty('--animation-scale', window.performanceScale);
+            
+            // 启动性能监控
+            requestAnimationFrame(checkPerformance);
+            
+            // 移动端特殊优化
             if (isMobile) {
-                // 降低动画复杂度
-                document.documentElement.style.setProperty('--animation-scale', '0.7');
                 // 减少同时显示的粒子数量
-                window.maxParticles = 50;
+                window.maxParticles = Math.floor(50 * window.performanceScale);
+                
+                // 优化动画样式
+                const style = document.createElement('style');
+                style.textContent = `
+                    .spark {
+                        animation-duration: 0.8s;
+                    }
+                    .spark-trail {
+                        animation-duration: 0.4s;
+                    }
+                `;
+                document.head.appendChild(style);
             }
+        }
+
+        // 添加性能监控和自动调整
+        let lastFrameTime = performance.now();
+        let frameCount = 0;
+        let fps = 60;
+
+        function checkPerformance() {
+            frameCount++;
+            const now = performance.now();
+            
+            if (now - lastFrameTime >= 1000) {
+                fps = frameCount;
+                frameCount = 0;
+                lastFrameTime = now;
+                
+                // 如果帧率过低，自动降级
+                if (fps < 30) {
+                    window.performanceScale = Math.max(0.3, (window.performanceScale || 1) - 0.1);
+                }
+            }
+            
+            requestAnimationFrame(checkPerformance);
         }
     </script>
 </body>
